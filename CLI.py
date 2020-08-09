@@ -512,9 +512,9 @@ class CLI(Cmd):
     @isSessionActive
     def PRINTFIELD(self, userange):
         PDF = self.dl.currentPDF[0]
+        columns = shutil.get_terminal_size().columns
         
         for i in userange:
-            printer.DEGRADED("_" * 20)
             print()
             printer.notice(f'<<{i}>>')
             print()
@@ -524,7 +524,7 @@ class CLI(Cmd):
                 printer.notice(f'{PDF[k][i]}')
             print()
             printer.notice(f'<<{i}>>')
-            printer.DEGRADED("_" * 20)
+            printer.DEGRADED("_" * columns)
             
         
     @isSessionActive

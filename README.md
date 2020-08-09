@@ -44,6 +44,7 @@ On your first run, do the following things:
 * cd : Change directory
 * m  : Mark indices. eg. m 1,2,3,4 or m 0. `m this` will show all the marked files in *that* session and `m all` will show all the marked files of *all* the sessions.
 * u  : Unmark indices
+* q  : Quit.
 * s  : Start a session using a search query.
 * c  : Change session
 * l  : Load the next set of results

@@ -465,6 +465,13 @@ class CLI(Cmd):
         '''
         if steps == '':
             steps = 5
+        elif steps > 20:
+            printer.comment('(cannot display >= 20 results)')
+            return
+        elif steps < 1:
+            printer.comment('(huh?)')
+            return
+        
         self.NAVIGATION('n', steps)
         
 
@@ -476,6 +483,13 @@ class CLI(Cmd):
         '''
         if steps == '':
             steps = 5
+        elif steps > 20:
+            printer.comment('(cannot display >= 20 results)')
+            return
+        elif steps < 1:
+            printer.comment('(huh?)')
+            return
+
         self.NAVIGATION('p', steps)
         
         

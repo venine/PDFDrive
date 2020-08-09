@@ -7,6 +7,14 @@ For anyone who would like to fork this project and make their own implementation
 ## Usage
 To run: `% python CLI.py [OPTIONAL DEFAULT DIRECTORY]`
 
+## First run caveats
+On your first run, do the following things:
+1. Change `self.headless = True` to `self.headless = False` inside downloadLink.py
+2. Run `firstrun.py`
+3. Install uBlock Origin addon.
+4. Change `self.headless = False` to `self.headless = True`
+5. Start using CLI.py.
+
 ## Caveats
 * 0 based indicing. 
 * Fetching another 20 results needs to be done manually. This is deliberately done so that the program does not take too long to initiate and secondly, you will, in 99% of the cases, obtain your desired file in the first set of 20 results. I found it useless to download 400 results (on an average) by default. 
@@ -25,12 +33,18 @@ To run: `% python CLI.py [OPTIONAL DEFAULT DIRECTORY]`
 * Basic abilities such as marking, unmarking indices, ls(), cd().
 * Colored output. 
 
+## Requirements
+1. selenium (Please install the geckodriver as well)
+2. termcolor
+3. filetype
+4. lxml
 
 ## Commandline commands
 * ls : Display files in the current directory
 * cd : Change directory
 * m  : Mark indices. eg. m 1,2,3,4 or m 0. `m this` will show all the marked files in *that* session and `m all` will show all the marked files of *all* the sessions.
 * u  : Unmark indices
+* s  : Start a session using a search query.
 * c  : Change session
 * l  : Load the next set of results
 * d  : Download all marked files 

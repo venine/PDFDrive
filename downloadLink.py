@@ -45,7 +45,8 @@ class downloadLink:
         self.driverOptions = FirefoxOptions()
         self.driverProfile = FirefoxProfile()
         
-        self.addonPath = '/home/caligian/.mozilla/firefox/qdoeuau8.default-release/extensions/uBlock0@raymondhill.net.xpi' 
+        self.addonPath = f'{os.environ["HOME"]}/.mozilla/firefox/qdoeuau8.default-release/extensions/uBlock0@raymondhill.net.xpi'
+
 
  # set headless or otherwise.
         self.driverOptions.headless = True

@@ -550,9 +550,16 @@ class CLI(Cmd):
         
         self.PRINTFIELD([i[0] for i in printList])
 
-
+        
+C = None
+if len(sys.argv) > 1:
+    if not os.path.exists(sys.argv[1]):
+        printer.ALERT(f"{sys.argv[1]} non-existent directory.")
+        sys.exit(1)
+    C = CLI(sys.argv[1])
+else:
+    C = CLI(os.environ['HOME'])
     
-C = CLI('/home/caligian/Personal')
 C.cmdloop()
 
                         

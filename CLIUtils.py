@@ -47,18 +47,6 @@ def showHelp(helpString = None, help=None):
     print(helpString)
     
 class navigateList:
-    '''
-
-    * Use this to navigate a list.
-    * This prints a list of items that can be printed.
-    * It prints items which can be printed. 
-    * The number of items printed are by default 10.
-    * Uses methods next() and prev() to go back and forth a list.
-    * Uses wrapping by default.
-    * You have to set the listObject manually. This is to ensure that the length of the object is updated each time you edit it.
-
-    '''
-
     def __init__(self):
         self.currentIndex = 0
         self.listObject = None
@@ -85,6 +73,8 @@ class navigateList:
             print(len(self.listObject))
 
     def goto(self, idx):
+        ''' jump to a certain index. the new range of items returned would be: new index, index + by '''
+
         if 0 < idx < self.listObjectLen:
             self.curentIndex = idx
         else:
@@ -141,6 +131,7 @@ class navigateList:
 
         
     def prev(self):
+        ''' go BEHIND (by default by 5) '''
         floor = self.currentIndex 
         ceil = self.listObjectLen - 1
         by = self.by
@@ -174,20 +165,29 @@ class navigateList:
             self.currentIndex = ceil + floor + 1
             returnList = self.getListByRange(origFloor, -1, 'p')
             returnList.extend(self.getListByRange(ceil, ceil + floor + 1, 'p'))
-            return returnList
+           return returnList
 
     def where(self):
+        ''' return the current range: current index, current index + 5 '''
         return self.getListByRange(*self.lastrange, None)
 
 
 class choice:
-    ''' 
-    * listObject is a list
-    * prompt is the prompt shown while accepting input
-    * printFunction needs to be set manually.
-    '''
-
     def __init__(self):
+        self.help = '''
+        * INT input will be taken as list index.
+        * s:INT input will be used as substring for search among the options.
+        * s:STRING input will be used as substring for searching among the options. 
+
+        Rules:
+        * If multiple strings match, the process will continue until only one match is found. The match will be returned. 
+        * 'print' will display all the items in the list.
+        * 'quit' will quit the program 
+        * 'help' will display this text
+        * 'helpShort' will display a small gist of this help.
+        '''
+
+
         self.listObject = None
         self.listObjectLen = None
         self.prompt = None
@@ -199,18 +199,22 @@ class choice:
         
     
     def appendBuiltin(self, add):
+        ''' add a command in this form (COMMANDNAME, COMMANDFUNCTION) <- tuple '''
+
         self.builtin[add[0]] = add
         self.regex = f'(?P<BUILTIN>{("|").join(i[0] for i in self.builtin.keys())})?\s*(?P<PARAM>(?P<INDEX>-?[0-9]+)|(?P<INDEXSTRING>s:(?:-|\+)?[0-9]+)|(?P<STRING>s:.+))?'
         
             
 
     def setObject(self, listObject):
+        ''' set the list object. you should not proceed without this.'''
         self.listObject = listObject
         self.listObjectLen = len(self.listObject)
         assert(self.listObjectLen > 1)
         
 
     def setPrompt(self, promptString):
+        ''' prompt string. '''
         self.prompt = promptString
 
     def _checkRegex(self, userInput):
@@ -258,6 +262,7 @@ class choice:
             return cmdFunc()
     
     def getUserInput(self, recursionObject=False, recursionObjectLen = False):
+        ''' start the commandline prompt '''
         obj = self.listObject
         objLen = self.listObjectLen
         if recursionObject:

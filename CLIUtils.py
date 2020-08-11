@@ -3,7 +3,7 @@
 import re
 import os
 from collections import defaultdict
-
+import sys
 
                 
 def printFunction(obj, keys=None):
@@ -82,7 +82,7 @@ class navigateList:
             self.lastrange = (0, by)
             self.currentIndex = by
         
-            
+            print(len(self.listObject))
 
     def goto(self, idx):
         if 0 < idx < self.listObjectLen:
@@ -193,15 +193,15 @@ class choice:
         self.prompt = None
         self.printFunction = printFunction
         self.builtin = {'print': printFunction, 'quit' : lambda : False, 'help': showHelp, 'cd' : traverseDirectory}
-        self.regex = f'(?P<BUILTIN>{("|").join([i for i in self.builtin.keys()])})?\s*(?P<PARAM>(?P<INDEX>-?\d+)|(?P<INDEXSTRING>s:(?:-|\+)?\d+)|(?P<STRING>.+))?'
+        self.regex = f'(?P<BUILTIN>{("|").join([i for i in self.builtin.keys()])})?\s*(?P<PARAM>(?P<INDEX>-?\d+)|(?P<INDEXSTRING>s:(?:-|\+)?\d+)|(?P<STRING>s:.+))?'
         
         self.regex = re.compile(self.regex)
         
     
     def appendBuiltin(self, add):
         self.builtin[add[0]] = add
-        self.regex = f'(?P<BUILTIN>{("|").join(i[0] for i in self.builtin.keys())})?\s*(?P<PARAM>(?P<INDEX>-?\d+)|(?P<INDEXSTRING>s:(?:-|\+)?\d+)|(?P<STRING>.+))?'
-        print(self.regex)
+        self.regex = f'(?P<BUILTIN>{("|").join(i[0] for i in self.builtin.keys())})?\s*(?P<PARAM>(?P<INDEX>-?[0-9]+)|(?P<INDEXSTRING>s:(?:-|\+)?[0-9]+)|(?P<STRING>s:.+))?'
+        
             
 
     def setObject(self, listObject):
@@ -232,21 +232,26 @@ class choice:
         elif match.group('INDEX'):
             ret['idx'] = match.group('INDEX')
             ret['idx'] = int(ret['idx'])
+            if ret['idx'] == 0:
+                ret['idx'] = True
+                
         elif match.group('BUILTIN'):
             ret['command'] = match.group("BUILTIN")
-        
+
         return ret
             
     def _checkCommand(self, cmd, args=None):
-        print(cmd)
         if not cmd:
             return False
         cmdFunc = self.builtin[cmd]
 
         if 'print' in cmd:
             return cmdFunc(self.listObject)
-        if cmd == 'quit':
-            exit 
+        elif cmd == 'quit':
+            sys.exit(1)
+        elif cmd == 'cd':
+            if args == None:
+                return False
         elif args:
             return cmdFunc(*args)
         else:
@@ -270,7 +275,7 @@ class choice:
         searchStr = None
         searchInd = None
         command = None
-        idx = None
+        index = -1
         param = None
         
         while True:
@@ -287,28 +292,28 @@ class choice:
             if u['command']:
                 command = u['command']
             if u['idx']:
-                idx = u['idx']
+                index = u['idx']
             if u['PARAM']:
                 param = u['PARM']
 
             checkIndex = lambda a, l: a < l
             
- 
-
-            if idx:
-                if idx < 0:
-                    print('(negative index.)')
-                    continue
-                elif idx >= objLen:
+            if u['idx'] and u['idx'] >= 1 or u['idx'] == True:
+                if u['idx'] == True:
+                    index = 0
+                
+                if u['idx'] < 0:
+                    print(f"(negative index.)")
+                elif u['idx'] >= objLen:
                     print('(greater than the max number of list.)')
-                    continue
-                return obj[idx]
+                    
+                return obj[u['idx']]
             elif searchInd or searchStr:
                 s = None
                 if searchInd:
                     s = searchInd.replace('s:','')
                 else:
-                    s = searchStr
+                    s = searchStr.replace('s:', '')
 
                     
                 matches = [i for i in obj if s in str(i)]
@@ -329,7 +334,11 @@ class choice:
                         return rep
 
             elif command:
-                self._checkCommand(command, param)
+                ret = self._checkCommand(command, param)
+                if ret == False:
+                    if command == 'cd':
+                        print('(no directory name provided)')
+                        
                 
             else:
                 print('(cannot recognize this string)')

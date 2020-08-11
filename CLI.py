@@ -290,8 +290,8 @@ class CLI(Cmd):
             try:
                 idx = int(i)
 
-                if (idx < 0 or idx > self.dl.currentPDFlen):
-                    printer.comment(f'({idx} is invalid/out of bounds, hence not marking)')
+                if (idx < 0 or idx >= self.dl.currentPDFlen):
+                    printer.comment(f'(0 < {idx} <= {self.dl.currentPDFlen}) ?')
                 elif idx in marked:
                     printer.comment(f'({idx} is already marked)')
                 else:
@@ -354,8 +354,8 @@ class CLI(Cmd):
                 idx = None
                 try:
                     idx = int(i)
-                    if (idx < 0 or idx > self.dl.currentPDFlen):
-                        printer.comment(f'({idx} is invalid/out of bounds, hence not marking)')
+                    if (idx < 0 or idx >= self.dl.currentPDFlen):
+                        printer.comment(f'(0 < {idx} <= {self.dl.currentPDFlen}) ?')
                     elif idx in popped:
                         printer.comment(f'({idx} is already unmarked)')
 
@@ -447,14 +447,16 @@ class CLI(Cmd):
         Each session is defined by a search query. Therefore, you will be given a small menu to choose the apt session.
         '''
         printer.notice('Changing session.')
-        sessions = self.dl.PDF.keys()
-
+        sessions = list(self.dl.PDF.keys())
+        
         if len(sessions) > 1:
             choice.setObject(sessions)
         else:
             printer.alert('this is the only session.')
             return
-        self.currentSession = self.dl.PDF[choice.getUserInput()]
+        
+        self.session = choice.getUserInput()
+        self.dl.currentPDF = self.dl.PDF[self.session]
         return 
         
         
@@ -506,6 +508,7 @@ class CLI(Cmd):
             return
         else:
             self.dl.nextPage()
+            self.navigateList.setObject(self.dl.currentPDF[0]['year'], 5)
             return
         
 
@@ -519,9 +522,12 @@ class CLI(Cmd):
             printer.notice(f'<<{i}>>')
             print()
             for k in self.dl.KEYS:
-                                
-                print(f'{k}> ', end="")
-                printer.notice(f'{PDF[k][i]}')
+                key = k
+                left = 10 - len(k)
+                k = k + " " * left + '| '
+                print(f'{k}', end="")
+                printer.notice(f'{PDF[key][i]}')
+                
             print()
             printer.notice(f'<<{i}>>')
             printer.DEGRADED("_" * columns)
@@ -547,7 +553,7 @@ class CLI(Cmd):
         elif direction == None:
             printList = self.navigateList.where()
 
-        
+
         self.PRINTFIELD([i[0] for i in printList])
 
         

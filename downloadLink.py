@@ -234,6 +234,7 @@ class downloadLink:
             
             for idx, i in enumerate(thumbnailBoth):
                 span = i.getparent().getparent().getnext().getchildren()[1].getchildren()
+                notnone = []
                 for detail in span:
                     t = detail.text
                     
@@ -243,22 +244,24 @@ class downloadLink:
                             
                         elif 'Page' in t:
                             appendPDF['pages'][idx] = t
-                            
+
                         elif 'B' in t:
                             appendPDF['size'][idx] = t
                             
                         elif re.search('\d{4}',t):
                             appendPDF['year'][idx] = t
                             
-
-            
+                            
+                                                            
+                
             for i in appendPDF.keys():
                 p = appendPDF[i]
+                p = list(filter(lambda x: x is not None, p))
                 self.currentPDF[0][i] = list(filter(lambda x: x is not None, self.currentPDF[0][i]))
                 self.currentPDF[0][i].extend(p)
                 
                 
-            self.currentPDFlen = len(self.currentPDF[0])
+            self.currentPDFlen = len(self.currentPDF[0]['year'])
             return True
         
                         
@@ -399,7 +402,12 @@ class downloadLink:
             printer.comment('(This is the only page. Cannot load the next non-existent page)')
         elif l == 1:
             printer.comment('(loading the next page. But this is the last page.)')
-            self.search(self.currentSession, pageNumber=self.currentPDF[1].pop())
+            try:
+                self.search(self.currentSession, pageNumber=self.currentPDF[1].pop())
+            except InvalidSearchQuery:
+                printer.ALERT('(cannot load any more pages.)')
+                return
+            
             self.getSearchQueryResults()
             
         elif l > 1:

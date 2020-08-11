@@ -308,14 +308,15 @@ class downloadLink:
             time.sleep(20)
 
             downloadLink = self.checkForAlertDialog(path='//a[@class="btn btn-success btn-responsive"]',alternatePath='//a[@class="btn btn-primary btn-user"]',xpath = True, alternatePathXpath = True)
-
+            
+            
             if not downloadLink:
                 downloadLink = False
+                printer.notice(f'(not found: {self.currentPDF[0]["name"][idx]})')    
             else:
                 downloadLink = downloadLink.get_attribute('href')
-                
+                printer.notice(f'(found: {self.currentPDF[0]["name"][idx]})')    
             self.currentPDF[0]['downloadLink'][idx] = downloadLink
-            printer.notice(f'(found: {self.currentPDF[0]["name"][idx]})')
             return True
             
             

@@ -138,7 +138,7 @@ class CLI(Cmd):
         
 
     @isSessionActive
-    def changeDirectoryPrompt(self,dirname=None, noupdate=True):
+    def changeDirectoryPrompt(self,dirname=None, noupdate=False):
         ''' change the directory and update the prompt. '''
         d = ""
         if dirname:
@@ -405,7 +405,7 @@ class CLI(Cmd):
                 ret = self.dl.downloadByIndex(marked)
                 for i in marked:
                     dl = PDF['downloadLink'][i]
-
+                    
                     if not dl:
                         PDF['marked'][i] = 'Cannot Download'
                         continue
@@ -458,7 +458,7 @@ class CLI(Cmd):
         
         ch = choice.getUserInput()
         self.currentSession = ch
-        self.changeDirectoryPrompt(noupdate=True)
+        self.changeDirectoryPrompt(noupdate=False)
         self.dl.currentPDF = self.dl.PDF[self.currentSession]
         return 
         

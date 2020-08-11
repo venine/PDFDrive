@@ -37,7 +37,6 @@ class CLI(Cmd):
         self.markedL = 0
 
         #current session
-        self.session = None
         self.sessionNumber = 0
         self.currentSession = ""
         self.dl = None
@@ -139,18 +138,20 @@ class CLI(Cmd):
         
 
     @isSessionActive
-    def changeDirectoryPrompt(self,dirname=None):
+    def changeDirectoryPrompt(self,dirname=None, noupdate=True):
         ''' change the directory and update the prompt. '''
         d = ""
         if dirname:
             d = dirname
         else:
             d = self.dl.currentPDF[3]
-            
-        d = os.path.abspath(d)
-        self.dl.currentPDFDownloadDirectory = d
-        self.dl.currentPDF[3] = d
-        os.chdir(d)
+
+        if not noupdate:
+            d = os.path.abspath(d)
+            self.dl.currentPDFDownloadDirectory = d
+            self.dl.currentPDF[3] = d
+            os.chdir(d)
+        
         d = d.replace(os.environ['HOME'],'~')
         CLI.prompt = f'<{self.currentSession}>\n<{d}>> '
         return 
@@ -455,8 +456,10 @@ class CLI(Cmd):
             printer.alert('this is the only session.')
             return
         
-        self.session = choice.getUserInput()
-        self.dl.currentPDF = self.dl.PDF[self.session]
+        ch = choice.getUserInput()
+        self.currentSession = ch
+        self.changeDirectoryPrompt(noupdate=True)
+        self.dl.currentPDF = self.dl.PDF[self.currentSession]
         return 
         
         
@@ -477,7 +480,6 @@ class CLI(Cmd):
         self.NAVIGATION('n', steps)
         
 
-    
     @isSessionActive
     def do_p(self, steps=5):
         '''

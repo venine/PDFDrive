@@ -235,10 +235,8 @@ class choice:
             ret['searchInd'] = match.group('INDEXSTRING').replace('s:','')
         elif match.group('INDEX'):
             ret['idx'] = match.group('INDEX')
-            ret['idx'] = int(ret['idx'])
-            if ret['idx'] == 0:
-                ret['idx'] = True
-                
+            ret['idx'] = ret['idx']
+                           
         elif match.group('BUILTIN'):
             ret['command'] = match.group("BUILTIN")
 
@@ -256,6 +254,9 @@ class choice:
         elif cmd == 'cd':
             if args == None:
                 return False
+        elif cmd == 'help':
+            cmdFunc(self.help)
+                
         elif args:
             return cmdFunc(*args)
         else:
@@ -280,7 +281,7 @@ class choice:
         searchStr = None
         searchInd = None
         command = None
-        index = -1
+        index = None
         param = None
         
         while True:
@@ -303,16 +304,15 @@ class choice:
 
             checkIndex = lambda a, l: a < l
             
-            if u['idx'] and u['idx'] >= 1 or u['idx'] == True:
-                if u['idx'] == True:
-                    index = 0
-                
-                if u['idx'] < 0:
+            if index:
+                index = int(index)
+                if index < 0:
                     print(f"(negative index.)")
-                elif u['idx'] >= objLen:
+                    continue
+                elif index >= objLen:
                     print('(greater than the max number of list.)')
-                    
-                return obj[u['idx']]
+                    continue
+                return obj[index]
             elif searchInd or searchStr:
                 s = None
                 if searchInd:
@@ -366,6 +366,3 @@ class choice:
     
             
             
-            
-            
- 

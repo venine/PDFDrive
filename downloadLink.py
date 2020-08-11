@@ -196,14 +196,16 @@ class downloadLink:
 
         appendPDF = self.getDataFrame()[0]
         
-        
         if self.currentSessionInvalid:
             return InvalidSearchQuery
-        else:
-            root = self.searchResultsHTML
-            thumbnailBoth = root.cssselect('img.img-zoom.file-img')
+
+
+        root = self.searchResultsHTML
+        thumbnailBoth = root.cssselect('img.img-zoom.file-img')
+
+        try:
             page = int(next(root.cssselect('div.Zebra_Pagination ul li a.current')[0].itertext()))
-            
+
             if len(self.currentPDF[1]) == 0:
                self.currentPDF[1] = root.cssselect('div.Zebra_Pagination ul li a[rel*=nofollow]')
                self.currentPDF[1] = [next(i.itertext()) for i in self.currentPDF[1]]
@@ -215,55 +217,57 @@ class downloadLink:
 
 
                if maxPagesL > 1:
-                   self.currentPDF[1] = list(range(maxPagesL,0,-1))
+                   self.currentPDF[1] = list(range(maxPagesL, 0, -1))
                    self.currentPDF[1].pop()
                else:
                    self.currentPDF[1] = [2]
 
-                    
-                    
-            printer.notice('(results found: {})'.format(len(thumbnailBoth)))
-            t = thumbnailBoth[0]
-            
-            for idx,i in enumerate(thumbnailBoth):
-                appendPDF['thumbnailSmall'][idx] = t.get('src')
-                appendPDF['thumbnailBig'][idx] = i.get('original')
-                appendPDF['name'][idx] =  i.get('title')
-                appendPDF['url'][idx] =  self.rootLink + i.getparent().get('href') 
-            
-            
-            for idx, i in enumerate(thumbnailBoth):
-                span = i.getparent().getparent().getnext().getchildren()[1].getchildren()
-                notnone = []
-                for detail in span:
-                    t = detail.text
-                    
-                    if t != None:
-                        if 'Download' in t:
-                            appendPDF['hits'][idx] = t
-                            
-                        elif 'Page' in t:
-                            appendPDF['pages'][idx] = t
 
-                        elif 'B' in t:
-                            appendPDF['size'][idx] = t
-                            
-                        elif re.search('\d{4}',t):
-                            appendPDF['year'][idx] = t
-                            
-                            
-                                                            
-                
-            for i in appendPDF.keys():
-                p = appendPDF[i]
-                p = list(filter(lambda x: x is not None, p))
-                self.currentPDF[0][i] = list(filter(lambda x: x is not None, self.currentPDF[0][i]))
-                self.currentPDF[0][i].extend(p)
-                
-                
-            self.currentPDFlen = len(self.currentPDF[0]['year'])
-            return True
-        
+        except:
+            self.currentPDF[1] = []
+
+
+        printer.notice('(results found: {})'.format(len(thumbnailBoth)))
+        t = thumbnailBoth[0]
+
+        for idx,i in enumerate(thumbnailBoth):
+            appendPDF['thumbnailSmall'][idx] = t.get('src')
+            appendPDF['thumbnailBig'][idx] = i.get('original')
+            appendPDF['name'][idx] =  i.get('title')
+            appendPDF['url'][idx] =  self.rootLink + i.getparent().get('href') 
+
+
+        for idx, i in enumerate(thumbnailBoth):
+            span = i.getparent().getparent().getnext().getchildren()[1].getchildren()
+            for detail in span:
+                t = detail.text
+
+                if t != None:
+                    if 'Download' in t:
+                        appendPDF['hits'][idx] = t
+
+                    elif 'Page' in t:
+                        appendPDF['pages'][idx] = t
+
+                    elif 'B' in t:
+                        appendPDF['size'][idx] = t
+
+                    elif re.search('\d{4}',t):
+                        appendPDF['year'][idx] = t
+
+
+        for i in appendPDF.keys():
+            p = appendPDF[i]
+            p = list(filter(lambda x: x is not None, p))
+            self.currentPDF[0][i] = list(filter(lambda x: x is not None, self.currentPDF[0][i]))
+            self.currentPDF[0][i].extend(p)
+
+
+        self.currentPDFlen = len(self.currentPDF[0]['year'])
+        return True
+
+            
+            
                         
     # check verity - can download ? # here refers to the element number from PDF DataFrame
     def canDownloadCheck(self,idx):
@@ -391,8 +395,6 @@ class downloadLink:
                 self.PDF[self.currentSession] = self.getDataFrame()
                 self.currentPDF = self.PDF[self.currentSession]
                 
-                
-            
         return True
         
     def nextPage(self):

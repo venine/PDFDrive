@@ -165,7 +165,7 @@ class navigateList:
             self.currentIndex = ceil + floor + 1
             returnList = self.getListByRange(origFloor, -1, 'p')
             returnList.extend(self.getListByRange(ceil, ceil + floor + 1, 'p'))
-           return returnList
+            return returnList
 
     def where(self):
         ''' return the current range: current index, current index + 5 '''

@@ -468,6 +468,8 @@ class CLI(Cmd):
         '''
         Traverse the list by INT amount. The default value is 5.
         '''
+        if steps:
+            steps = int(steps)
         if steps == '':
             steps = 5
         elif steps > 20:

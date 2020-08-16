@@ -469,7 +469,11 @@ class CLI(Cmd):
         Traverse the list by INT amount. The default value is 5.
         '''
         if steps:
-            steps = int(steps)
+            try:
+                steps = int(steps)
+            except ValueError:
+                printer.comment('(need integer arg.)')
+                return
         if steps == '':
             steps = 5
         elif steps > 20:
@@ -487,6 +491,12 @@ class CLI(Cmd):
         '''
         Traverse the list background by INT amount. The default value is 5
         '''
+        if steps:
+            try:
+                steps = int(steps)
+            except ValueError:
+                printer.comment('(need integer arg.)')
+                return
         if steps == '':
             steps = 5
         elif steps > 20:

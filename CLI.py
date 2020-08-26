@@ -186,7 +186,7 @@ class CLI(Cmd):
                     if not ch:
                         print.alert('(no arg provided)')
                     elif re.match('^ls|\sls\s|^ls$',ch):
-                        self.do_ls(line)
+                        self.do_ls()
                     elif re.match('^..\s|^../$|^../\s', ch):
                         curdir = os.getcwd().split('/')
                         curdir.pop()

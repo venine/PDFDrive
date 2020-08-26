@@ -268,6 +268,7 @@ class downloadLink:
         
         
         self.currentPDFlen = len(self.currentPDF[0]['year'])
+        self.currentPDF[0]['downloadLink'] = [None for i in range(self.currentPDFlen)]
         
         return True
 

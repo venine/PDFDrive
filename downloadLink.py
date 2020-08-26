@@ -34,7 +34,7 @@ class downloadLink:
         # concoct the search url
         self.link = 'https://www.pdfdrive.com/search?q={}'.format(('+').join(search.split()))
         self.currentSession = None
-        self.currentPDF = None
+        self.currentPDF = self.getDataFrame()
         self.currentPDFDownloadDirectory = None
         self.currentPDFlen = 0
         self.currentSessionInvalid = True
@@ -194,16 +194,14 @@ class downloadLink:
         maxPages = None
         maxPagesL = 0
 
-        appendPDF = self.getDataFrame()[0]
+        fileinfo = self.currentFileInfo
         
         if self.currentSessionInvalid:
             return InvalidSearchQuery
 
-
-        root = self.searchResultsHTML
-        thumbnailBoth = root.cssselect('img.img-zoom.file-img')
-
+         
         try:
+            root = self.searchResultsHTML
             page = int(next(root.cssselect('div.Zebra_Pagination ul li a.current')[0].itertext()))
 
             if len(self.currentPDF[1]) == 0:
@@ -227,43 +225,50 @@ class downloadLink:
             self.currentPDF[1] = []
 
 
-        printer.notice('(results found: {})'.format(len(thumbnailBoth)))
-        t = thumbnailBoth[0]
+        printer.notice('(results found: {})'.format(len(fileinfo)))
 
-        for idx,i in enumerate(thumbnailBoth):
-            appendPDF['thumbnailSmall'][idx] = t.get('src')
-            appendPDF['thumbnailBig'][idx] = i.get('original')
-            appendPDF['name'][idx] =  i.get('title')
-            appendPDF['url'][idx] =  self.rootLink + i.getparent().get('href') 
+        removeIdx = []
+        div = fileinfo
+        p = self.currentPDF[0]
+        for i in div:
+            a = i.getprevious()
+            p['url'].append(self.rootLink + a.get('href'))
+            name = ""
+            for s in a.getchildren()[0].itertext():
+                name += s
+            p['name'].append(name)
+            
+            text = []
+            for span in i.getchildren():
+                if span.text == None or span.text == '.':
+                    continue
+                if span.text != None:
+                    text.append(span.text)
+                    
 
-
-        for idx, i in enumerate(thumbnailBoth):
-            span = i.getparent().getparent().getnext().getchildren()[1].getchildren()
-            for detail in span:
-                t = detail.text
-
-                if t != None:
-                    if 'Download' in t:
-                        appendPDF['hits'][idx] = t
-
-                    elif 'Page' in t:
-                        appendPDF['pages'][idx] = t
-
-                    elif 'B' in t:
-                        appendPDF['size'][idx] = t
-
-                    elif re.search('\d{4}',t):
-                        appendPDF['year'][idx] = t
-
-
-        for i in appendPDF.keys():
-            p = appendPDF[i]
-            p = list(filter(lambda x: x is not None, p))
-            self.currentPDF[0][i] = list(filter(lambda x: x is not None, self.currentPDF[0][i]))
-            self.currentPDF[0][i].extend(p)
-
-
+            put = defaultdict(lambda: [])
+            for t in text:
+                if 'Pages' in t:
+                    put['pages'].append(t)
+                    
+                elif re.search('\d{4}', t):
+                    put['year'].append(t)
+                    
+                elif re.search('MB|KB|B', t):
+                    put['size'].append(t)
+                    
+                elif 'Downloads' in t:
+                    put['hits'].append(t)
+                    
+            for k in self.KEYS:
+                if not (k == 'name' or k == 'url'):
+                    if len(put[k]) == 0:
+                        put[k].append(None)
+                p[k].extend(put[k])
+        
+        
         self.currentPDFlen = len(self.currentPDF[0]['year'])
+        
         return True
 
             
@@ -280,7 +285,7 @@ class downloadLink:
             self.driver.install_addon(self.addonPath)
             
         
-        try:
+        try:    
             self.driver.get(self.currentPDF[0]['url'][idx])
         except WebDriverException:
             downloadLink = False
@@ -359,8 +364,7 @@ class downloadLink:
         Return a DataFrame and another blank list which is supposed to indicate the page number.
         fmt = [ df, [1,2,3,4], [3,4,3]] [1] = page numbers left; [2] = marked for downloaded
         '''
-
-        d = defaultdict(lambda : [None for i in range(20)])
+        d = defaultdict(lambda : [])
         return [d, [], [], ""]
 
         
@@ -379,32 +383,33 @@ class downloadLink:
         self.searchResultsHTML = etree.HTML(self.searchResultsHTML.text)
 
         root = self.searchResultsHTML
-        thumbnailBoth = root.cssselect('img.img-zoom.file-img')
-        thumbnailBothL = len(thumbnailBoth)
-        
-        if thumbnailBothL == 0:
+        fileinfo = root.cssselect('div.file-info')
+        self.currentFileInfo = fileinfo
+        fileinfoL = len(fileinfo)
+
+        if fileinfoL == 0:
             self.currentSessionInvalid = True
             raise InvalidSearchQuery
         
         else:
             self.currentSession = search
             self.currentSessionInvalid = False
-
+            
             try:
                 self.PDF[self.currentSession]
             except KeyError:
                 self.PDF[self.currentSession] = self.getDataFrame()
                 self.currentPDF = self.PDF[self.currentSession]
                 
-        return True
+        return fileinfo
         
     def nextPage(self):
         l = len(self.currentPDF[1])
         
         if l == 0:
-            printer.comment('(This is the only page. Cannot load the next non-existent page)')
+            printer.notice('(This is the only page. Cannot load the next non-existent page)')
         elif l == 1:
-            printer.comment('(loading the next page. But this is the last page.)')
+            printer.notice('(loading the next page. But this is the last page.)')
             try:
                 self.search(self.currentSession, pageNumber=self.currentPDF[1].pop())
             except InvalidSearchQuery:
@@ -415,7 +420,7 @@ class downloadLink:
             
         elif l > 1:
             l = l-1
-            printer.comment(f'(loading the next page. {l} pages left.)')
+            printer.notice(f'(loading the next page. {l} pages left.)')
             send = self.currentPDF[1].pop()
             self.search(self.currentSession, pageNumber=send)
             self.getSearchQueryResults()
